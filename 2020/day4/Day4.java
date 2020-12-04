@@ -7,10 +7,11 @@ public class Day4{
       int part1Valid = 0, cnt = 0, part2Valid = 0;
       for(var s = br.readLine();; s = br.readLine()){
  	if (s == null || "".equals(s)){
-          var map = parse(list);
-	  int valid = part1(map, List.of("byr","iyr","eyr","hgt","hcl","ecl","pid"/*,"cid"*/));
+          var keyValue = parse(list);
+	  var expectedFields = List.of("byr","iyr","eyr","hgt","hcl","ecl","pid"/*,"cid"*/);
+	  int valid = keyValue.keySet().containsAll(expectedFields) ? 1 : 0;
 	  part1Valid += valid;
-	  part2Valid += valid*part2(map);
+	  part2Valid += valid*part2(keyValue);
  	  ++cnt;
 	  list.clear();
         }
@@ -23,48 +24,26 @@ public class Day4{
   private static int part2(Map<String,String>map){
     int valid = 1;
     for(var e : map.entrySet()){
+      var s = e.getValue();
       switch(e.getKey()){
-	case "byr":valid*= byr(e.getValue()); break; 
-	case "iyr":valid*= iyr(e.getValue()); break; 
-	case "eyr":valid*= eyr(e.getValue()); break; 
-	case "hgt":valid*= hgt(e.getValue()); break; 
-	case "hcl":valid*= hcl(e.getValue()); break; 
-	case "ecl":valid*= ecl(e.getValue()); break; 
-	case "pid":valid*= pid(e.getValue()); break; 
+	case "byr":valid*= inRange(s,4,1920,2002); break; 
+	case "iyr":valid*= inRange(s,4,2010,2020); break; 
+	case "eyr":valid*= inRange(s,4,2020,2030); break; 
+	case "hgt":valid*= 
+    		s.endsWith("in") ? inRange(s.substring(0,s.length()-2),-1,59,76)
+	        : s.endsWith("cm") ? inRange(s.substring(0,s.length()-2),-1,150,193) : 0;
+		break; 
+	case "hcl":valid*= s.matches("#[0-9a-f]{6}") ? 1 : 0; break; 
+	case "ecl":valid*= s.matches("amb|blu|brn|gry|grn|hzl|oth") ? 1 : 0; break;
+	case "pid":valid*= s.matches("[0-9]{9}") ? 1 : 0; break; 
         default:
       }
     }
     return valid;
   }
-  static int pid(String s){
-    return s.matches("[0-9]{9}") ? 1 : 0;
-  }
-  static int ecl(String s){
-    return s.matches("amb|blu|brn|gry|grn|hzl|oth") ? 1 : 0;
-  }
-  static int hcl(String s){
-    return s.matches("#[0-9a-f]{6}") ? 1 : 0;
-  }
-  static int hgt(String s){
-    if (s.endsWith("in")){
-      var v = parse(s.substring(0,s.length()-2));
-      return v != null && 59 <= v && v <= 76 ? 1 : 0;
-    } else if (s.endsWith("cm")){
-      var v = parse(s.substring(0,s.length()-2));
-      return v != null && 150 <= v && v <= 193 ? 1 : 0;
-    } else return 0;
-  }
-  static int byr(String s){
-     var v =  parse(s);
-     return s.length() == 4 && v != null && 1920 <= v && v <= 2002 ? 1 : 0;
-  }
-  static int iyr(String s){
+  static int inRange(String s, int length, int lo, int hi){
      var v = parse(s);
-     return s.length() == 4 && v != null && 2010 <= v && v <= 2020 ? 1 : 0;
-  }
-  static int eyr(String s){
-     var v = parse(s);
-     return s.length() == 4 && v != null && 2020 <= v && v <= 2030 ? 1 : 0;
+     return (length == -1 || s.length() == length) && v != null && lo <= v && v <= hi ? 1 : 0;
   }
   static Long parse(String s){
     try{
@@ -73,20 +52,14 @@ public class Day4{
       return null;
     }
   }
-  private static int part1(Map<String,String>map, List<String>ids){
-    for(var id : ids){
-	if (!map.containsKey(id)) return 0;
-    }
-    return 1;
-  }
-  private static Map<String,String> parse(List<String>kv){
-    var map = new HashMap<String,String>();
-    for(var s : kv){
+  private static Map<String,String> parse(List<String>input){
+    var keyValue = new HashMap<String,String>();
+    for(var s : input){
 	for(var token : s.split("\\s+")){
 	  var arr = token.split("\\:");
-	  map.put(arr[0],arr[1]);
+	  keyValue.put(arr[0],arr[1]);
 	}
     }
-    return map;
+    return keyValue;
   }
 }
