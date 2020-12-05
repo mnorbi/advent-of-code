@@ -11,7 +11,7 @@ public class Day5{
 	long seatId = row*8+col;
 	seatIdsPart2.add(seatId);
 	maxPart1 = Math.max(maxPart1,seatId);
-	System.out.println(List.of(row*8+col,row,col));
+	System.out.println(List.of(seatId,row,col));
       }
       System.out.println(maxPart1);
       Collections.sort(seatIdsPart2);
